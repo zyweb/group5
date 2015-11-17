@@ -1,0 +1,74 @@
+<?php
+
+namespace app\controllers;
+
+use Yii;
+use yii\filters\AccessControl;
+use yii\web\Controller;
+use yii\filters\VerbFilter;
+use app\models\LoginForm;
+use app\models\ContactForm;
+use app\models\Position;
+use app\models\Company;
+
+class PositionsController extends \yii\web\Controller
+{
+	#职位分类等级一
+    public function actionIndex()
+    {
+		$Model = new Position;
+		$info = $Model::find()->where(['parent_id'=>'0'])->asArray()->all();
+		if(empty($info)){
+			$arr['stat'] = '100';  
+			$arr['mess'] = 'error';
+			$arr['data'] = '';
+			exit(json_encode($arr));
+		}else{
+			$arr['stat'] = '200';
+			$arr['mess'] = 'success';
+			$arr['data'] = $info;
+			exit(json_encode($arr));
+		}
+    }
+
+	#职位分类等级二
+	public function actionRanktwo(){
+		$Model = new Position;
+		$po_id = $_REQUEST['position_id'];
+		$info  = $Model::find()->where(['parent_id'=>$po_id])->asArray()->all();
+		if(empty($info)){
+			$arr['stat'] = '100';
+			$arr['mess'] = 'error';
+			$arr['data'] = '';
+			exit(json_encode($arr));
+		}else{
+			$arr['stat'] = '200';
+			$arr['mess'] = 'success';
+			$arr['data'] = $info;
+		}
+		exit(json_encode($arr));
+	}
+	
+	#职位搜索
+	public function actionPosi(){
+		$work_city = isset($_GET['work_city'])?$_GET['work_city']:0;
+		$rj_name   = isset($_GET['rj_name'])?$_GET['rj_name']:0;
+		$where = '';
+    	$where .= $work_city === 0 ? '' : " and work_city like '%".$work_city."%'";
+    	$where .= $rj_name === 0?'':" and rj_name like '%".$rj_name."%'";
+    	$info  = Position::findBySql("select * from rel_job inner join company on rel_job.company_id=company.c_id where 1=1 ".$where)->asArray()->all();
+		if(empty($info)){
+			$arr['stat'] = '100';
+			$arr['mess'] = 'error';
+			$arr['data'] = '';
+			exit(json_encode($arr));
+		}else{
+			$arr['stat'] = '200';
+			$arr['mess'] = 'success';
+			$arr['data'] = $info;
+		}
+		exit(json_encode($arr));
+	}
+}
+
+
